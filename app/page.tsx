@@ -1,17 +1,33 @@
+'use client'
 import React from 'react'
 import useSharedComponents from './shared/components'
 import axios from 'axios'
 import Link from 'next/link'
 
-async function getRecipes() {
-  return (await axios.get(`https://dummyjson.com/recipes`)).data.recipes
-}
+const Home: React.FC<any> = (props) => {
+  const [recipes, setRecipes] = React.useState([])
 
-const Home: React.FC<any> = async (props) => {
-  let recipes = await getRecipes();
+  async function getRecipes() {
+    return (await axios.get(`https://dummyjson.com/recipes`)).data.recipes
+  }
+
+  React.useEffect(() => {
+    (async () => {
+      setRecipes(await getRecipes())
+    })()
+  }, [])
+  // let recipes = await getRecipes();
+
+  let selectedFilter: 'Easy' | 'Medium' | 'Hard' | '' = ''
 
   // Hooks
-  const { Navbar, PageTitle } = useSharedComponents()
+  const { Navbar, PageTitle, Filter } = useSharedComponents()
+
+  const handleFilter = async (filter: 'Easy' | 'Medium' | 'Hard' | '') => {
+    console.log(filter)
+    let data = await getRecipes();
+    setRecipes(data.filter((item: any) => item.difficulty === filter))
+  }
 
   return (
     <>
@@ -22,11 +38,7 @@ const Home: React.FC<any> = async (props) => {
           <div className='flex items-center justify-center border-[#e6e6e6] border-solid border-[1px] h-[50px]'>
             Menu
           </div>
-          <div className='flex flex-col gap-[10px] border-[#e6e6e6] border-solid border-[1px] p-[10px] items-center'>
-            <span id='easy' className='text-base font-medium cursor-pointer'>Opcion Easy</span>
-            <span id='medium' className='text-base font-medium cursor-pointer'>Opcion Medium</span>
-            <span id='hard' className='text-base font-medium cursor-pointer'>Opcion Hard</span>
-          </div>
+          <Filter onFilter={handleFilter} filter={selectedFilter} />
         </div>
         <div className='w-full md:w-[75%] border-[#e6e6e6] border-solid border-[1px] items-center'>
           <table className='table-auto w-full'>
